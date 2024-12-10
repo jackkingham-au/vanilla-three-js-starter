@@ -1,32 +1,41 @@
+import Application from "./Application";
 import * as THREE from "three";
 
 export default class Lights {
+    _parent: Application;
+    _lights: Array<THREE.Object3D>;
 
-    static _directionalLight: THREE.DirectionalLight;
-    static _debug?: THREE.DirectionalLightHelper
+    constructor(parent: Application) {
+        this._parent = parent;
+        this._lights = [];
 
-    constructor(scene: THREE.Scene) {
-        Lights._directionalLight = new THREE.DirectionalLight('#fff', 3)
-        Lights._directionalLight.position.set(-2.25, 5, -4.5)
-
-        Lights._applyShadowSettings();
-
-        scene.add(Lights._directionalLight);
+        this._init();
     }
 
-    static _applyShadowSettings = () => {
-        Lights._directionalLight.castShadow = true
-        Lights._directionalLight.shadow.mapSize.set(1024, 1024)
-        Lights._directionalLight.shadow.camera.near = 0.1
-        Lights._directionalLight.shadow.camera.far = 30
-        Lights._directionalLight.shadow.camera.top = 8
-        Lights._directionalLight.shadow.camera.right = 8
-        Lights._directionalLight.shadow.camera.bottom = -8
-        Lights._directionalLight.shadow.camera.left = -8
+    _init = () => {
+        this._addTopLight();
+        
+        this._parent._scene.add(...this._lights);
     }
 
-    static _addDebug = () => {
-        Lights._debug = new THREE.DirectionalLightHelper(Lights._directionalLight, 1, "red");
-        return Lights._debug;
+    _addTopLight = () => {
+        const directionalLight = new THREE.DirectionalLight('#fff', 3)
+
+        directionalLight.position.set(-2.25, 5, -4.5)
+        directionalLight.intensity = 6;
+
+        directionalLight.castShadow = true
+        directionalLight.shadow.mapSize.set(1024, 1024)
+        directionalLight.shadow.camera.near = 0.1
+        directionalLight.shadow.camera.far = 30
+        directionalLight.shadow.camera.top = 8
+        directionalLight.shadow.camera.right = 8
+        directionalLight.shadow.camera.bottom = -8
+        directionalLight.shadow.camera.left = -8
+
+        this._lights.push(directionalLight);
+
+        const helper = new THREE.DirectionalLightHelper(directionalLight, 1, "red");
+        this._lights.push(helper);
     }
 }

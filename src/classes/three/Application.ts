@@ -3,6 +3,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Game from "../core/Game";
 import World from "../world/World";
 import GUI from "lil-gui";
+import Lights from "./Lights";
 
 export default class Application {
     _scene: THREE.Scene;
@@ -12,7 +13,7 @@ export default class Application {
     _clock: THREE.Clock;
     _canvas: HTMLCanvasElement;
     _controls!: OrbitControls;
-    _lights!: Array<THREE.Object3D>;
+    _lights: Lights;
     _debug!: GUI;
 
     _game: Game;
@@ -31,10 +32,10 @@ export default class Application {
         this._setRenderer();
         this._setCamera();
         this._setControls();
-        this._setLights();
         this._setWindowResize();
         this._setDebug();
 
+        this._lights = new Lights(this); 
         this._game = new Game(this);
         this._world = new World(this);
 
@@ -51,6 +52,7 @@ export default class Application {
         this._renderer = new THREE.WebGLRenderer({
             canvas: this._canvas,
             alpha: true,
+            antialias: true
         })
 
         this._renderer.setSize(this._viewport.width, this._viewport.height)
@@ -59,31 +61,6 @@ export default class Application {
         /** Enable Shadows */
         this._renderer.shadowMap.enabled = true
         this._renderer.shadowMap.type = THREE.PCFSoftShadowMap
-    }
-
-    _setLights = () => {
-        this._lights = [];
-
-        const directionalLight = new THREE.DirectionalLight('#fff', 3)
-
-        directionalLight.position.set(-2.25, 5, -4.5)
-        directionalLight.intensity = 6;
-
-        directionalLight.castShadow = true
-        directionalLight.shadow.mapSize.set(1024, 1024)
-        directionalLight.shadow.camera.near = 0.1
-        directionalLight.shadow.camera.far = 30
-        directionalLight.shadow.camera.top = 8
-        directionalLight.shadow.camera.right = 8
-        directionalLight.shadow.camera.bottom = -8
-        directionalLight.shadow.camera.left = -8
-
-        this._lights.push(directionalLight);
-
-        const lightHelper = new THREE.DirectionalLightHelper(directionalLight, 1, "red");
-        this._lights.push(lightHelper);
-
-        this._scene.add(...this._lights);
     }
 
     _setCamera = () => {

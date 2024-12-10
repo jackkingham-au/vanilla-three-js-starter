@@ -1,11 +1,15 @@
 import Entity from "./Entity";
+import Game from "./Game";
 
 export default class EntityManager {
     _entities: Entity[];
     _entitiesMap: Record<string, Entity>
     _ids: number;
+    _parent: Game;
 
-    constructor() {
+    constructor(parent: Game) {
+        this._parent = parent;
+
         this._entities = [];
         this._entitiesMap = {}
         this._ids = 0;
@@ -14,7 +18,7 @@ export default class EntityManager {
     _getName = () => {
         this._ids += 1;
 
-        return `__component__${this._ids}`
+        return `__entity__${this._ids}`
     }
 
     /** Add a component to the manager. */
@@ -26,7 +30,7 @@ export default class EntityManager {
     }
 
     /** Get a component by name */
-        get = (name: string) => {
+    get = (name: string) => {
         return this._entitiesMap[name];
     }
 
