@@ -31,6 +31,11 @@ export default class EntityManager {
         return this._entitiesMap[name];
     }
 
+    /** Get a component by its instance type. */
+    getByType = <T extends Entity>(type: new (...args: any[]) => T) => {
+        return this._entities.filter(entity => entity instanceof type);
+    }
+
     /** Filter components by `Array.prototype.filter`. */
     filter = (filter: Parameters<typeof Array.prototype.filter>[0]) => {
         return this._entities.filter(filter);
