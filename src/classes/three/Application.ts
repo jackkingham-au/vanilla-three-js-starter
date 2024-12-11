@@ -97,7 +97,7 @@ export default class Application {
 
     _setCamera = () => {
         this._camera = new THREE.PerspectiveCamera(75, this._viewport.width / this._viewport.height, 0.1, 100)
-        this._camera.position.set(-1, 2.5, 0);
+        this._camera.position.set(5, 5, 5);
 
         this._scene.add(this._camera);
     }
