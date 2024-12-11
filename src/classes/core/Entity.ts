@@ -9,8 +9,8 @@ export default class Entity {
     _parent!: EntityManager;
     _components: Map<string, ComponentClass> = new Map();
 
-    setParent = (entityManager: EntityManager) => {
-        this._parent = entityManager;
+    constructor(parent: EntityManager) {
+        this._parent = parent;
     }
 
     _getApplication() {
@@ -46,5 +46,9 @@ export default class Entity {
         })
     }
 
+    /** Initialize the entity. This method will be overriden by each Custom Entity. */
+    _init = () => {}
+
+    /** Standard tick/animate method. This method will be overriden by each Custom Entity. */
     update = (elapsedTime: number) => {}
 }   

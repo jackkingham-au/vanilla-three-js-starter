@@ -15,15 +15,12 @@ export default class EntityManager {
         this._ids = 0;
     }
 
-    _getName = () => {
-        this._ids += 1;
-
-        return `__entity__${this._ids}`
-    }
-
     /** Add a component to the manager. */
-    add = (entity: Entity, name?: string) => {
-        if (!name) name = this._getName();
+    add = (EntityClass: new (parent: EntityManager) => Entity, givenName?: string) => {
+        const name = givenName ?? EntityClass.name;
+        const entity = new EntityClass(this);
+
+        entity._init();
 
         this._entities.push(entity);
         this._entitiesMap[name] = entity;
