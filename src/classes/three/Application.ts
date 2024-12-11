@@ -1,9 +1,10 @@
+import GUI from "lil-gui";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import Game from "../core/Game";
 import World from "../world/World";
-import GUI from "lil-gui";
 import Lights from "./Lights";
+
 
 export default class Application {
     _scene: THREE.Scene;
@@ -13,11 +14,18 @@ export default class Application {
     _clock: THREE.Clock;
     _canvas: HTMLCanvasElement;
     _controls!: OrbitControls;
-    _lights: Lights;
+    _lights!: Lights;
     _debug!: GUI;
+    _time = {
+        previous: 0,
+        deltaTime: 0,
+        elapsedTime: 0,
+    }
 
     _game: Game;
     _world: World;
+
+    // _postProcessing: PostProcessing;
 
     constructor(canvas: HTMLCanvasElement) {
         this._canvas = canvas;
@@ -35,9 +43,11 @@ export default class Application {
         this._setWindowResize();
         this._setDebug();
 
-        this._lights = new Lights(this); 
         this._game = new Game(this);
         this._world = new World(this);
+
+        this._lights = new Lights(this);
+        // this._postProcessing = new PostProcessing(this);
 
         this._tick();
     }
@@ -45,6 +55,25 @@ export default class Application {
     _setDebug = () => {
         this._debug = new GUI({ width: 350 });
 
+        const rendererFolder = this._debug.addFolder("Renderer");
+
+        rendererFolder
+            .add(this._renderer, "toneMapping", {
+                "No Tone Mapping": THREE.NoToneMapping,
+                "Linear Tone Mapping": THREE.LinearToneMapping,
+                "Reinhard Tone Mapping": THREE.ReinhardToneMapping,
+                "Cineon Tone Mapping": THREE.CineonToneMapping,
+                "ACES Filmic Tone Mapping": THREE.ACESFilmicToneMapping,
+                "AgX Tone Mapping": THREE.AgXToneMapping,
+                "Neutral Tone Mapping": THREE.NeutralToneMapping,
+                "Custom Tone Mapping": THREE.CustomToneMapping
+            }).name("Tone Mapping");
+
+        rendererFolder
+            .add(this._renderer, "toneMappingExposure").name("Tone Mapping Exposure")
+            .min(0).max(10).step(0.001);
+
+        rendererFolder.close();
         this._debug.close();
     }
 
@@ -52,7 +81,7 @@ export default class Application {
         this._renderer = new THREE.WebGLRenderer({
             canvas: this._canvas,
             alpha: true,
-            antialias: true
+            antialias: false,
         })
 
         this._renderer.setSize(this._viewport.width, this._viewport.height)
@@ -61,11 +90,14 @@ export default class Application {
         /** Enable Shadows */
         this._renderer.shadowMap.enabled = true
         this._renderer.shadowMap.type = THREE.PCFSoftShadowMap
+
+        this._renderer.toneMapping = THREE.CineonToneMapping;
+        this._renderer.toneMappingExposure = 1.5;
     }
 
     _setCamera = () => {
         this._camera = new THREE.PerspectiveCamera(75, this._viewport.width / this._viewport.height, 0.1, 100)
-        this._camera.position.set(5, 5, 5);
+        this._camera.position.set(-1, 2.5, 0);
 
         this._scene.add(this._camera);
     }
@@ -88,11 +120,19 @@ export default class Application {
             // Update renderer
             this._renderer.setSize(this._viewport.width, this._viewport.height)
             this._renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
+            // Update post processing
+            // this._postProcessing._composer.setSize(this._viewport.width, this._viewport.height);
+            // this._postProcessing._composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         })
     }
 
     _tick = () => {
         const elapsedTime = this._clock.getElapsedTime();
+
+        this._time.deltaTime = elapsedTime - this._time.previous;
+        this._time.previous = elapsedTime;
+        this._time.elapsedTime = elapsedTime;
 
         this._world.update(elapsedTime);
         this._game.update(elapsedTime);
@@ -100,6 +140,7 @@ export default class Application {
         this._controls.update();
 
         this._renderer.render(this._scene, this._camera);
+        // this._postProcessing.render();
 
         requestAnimationFrame(this._tick);
     }
